@@ -1,0 +1,242 @@
+[
+  {
+    "claimId": "CLM-1001",
+    "patient": { "name": "Sarah Johnson", "dateOfBirth": "1985-03-15", "memberId": "BCB-889012345" },
+    "provider": { "name": "Dr. Michael Chen", "npi": "1234567890", "specialty": "Orthopedic Surgery", "facility": "Oakwood Orthopedic Associates" },
+    "payer": { "name": "Blue Cross Blue Shield of Illinois", "payerId": "BCBS-IL" },
+    "dateOfService": "2025-11-15", "dateSubmitted": "2025-11-20",
+    "lineItems": [{ "cptCode": "73721", "description": "MRI of lower extremity joint without contrast", "units": 1, "billedAmount": 1850.00, "allowedAmount": 0, "paidAmount": 0 }],
+    "totalBilledAmount": 1850.00, "totalAllowedAmount": 0, "totalPaidAmount": 0,
+    "status": "denied", "denialReason": "Missing prior authorization", "denialCode": "CO-197",
+    "payerNotes": "Claim denied: Prior authorization is required for advanced imaging (MRI/CT/PET). No authorization number found on file for date of service 11/15/2025. You may request a retroactive authorization by contacting our Utilization Management department at 1-800-555-0101.",
+    "priorActions": [], "filingDeadline": "2026-05-20"
+  },
+  {
+    "claimId": "CLM-1002",
+    "patient": { "name": "Robert Martinez", "dateOfBirth": "1972-08-22", "memberId": "AET-776543210" },
+    "provider": { "name": "Dr. Emily Watson", "npi": "2345678901", "specialty": "Physical Medicine & Rehabilitation", "facility": "Summit Physical Therapy Center" },
+    "payer": { "name": "Aetna", "payerId": "AETNA-PPO" },
+    "dateOfService": "2025-09-01", "dateSubmitted": "2025-09-10",
+    "lineItems": [
+      { "cptCode": "97110", "description": "Therapeutic exercises, each 15 minutes", "units": 4, "billedAmount": 200.00, "allowedAmount": 0, "paidAmount": 0 },
+      { "cptCode": "97140", "description": "Manual therapy techniques, each 15 minutes", "units": 2, "billedAmount": 100.00, "allowedAmount": 0, "paidAmount": 0 },
+      { "cptCode": "97530", "description": "Therapeutic activities, each 15 minutes", "units": 2, "billedAmount": 100.00, "allowedAmount": 0, "paidAmount": 0 }
+    ],
+    "totalBilledAmount": 2400.00, "totalAllowedAmount": 0, "totalPaidAmount": 0,
+    "status": "denied", "denialReason": "Not medically necessary", "denialCode": "CO-50",
+    "payerNotes": "Services denied as not medically necessary. Documentation submitted does not support the need for continued physical therapy beyond the initial 8-visit authorization. Patient has not demonstrated measurable functional improvement per submitted progress notes. Peer-to-peer review may be requested within 30 days.",
+    "priorActions": [{ "date": "2025-10-05", "type": "appeal", "description": "Submitted initial appeal with updated progress notes showing 15% improvement in range of motion and functional outcome scores. Appeal denied 10/25 — payer states improvement is insufficient to justify additional sessions.", "outcome": "denied" }],
+    "filingDeadline": "2026-03-10"
+  },
+  {
+    "claimId": "CLM-1003",
+    "patient": { "name": "Linda Thompson", "dateOfBirth": "1968-11-30", "memberId": "UHC-554321098" },
+    "provider": { "name": "Dr. James Park", "npi": "3456789012", "specialty": "Orthopedic Surgery", "facility": "Northwest Surgical Center" },
+    "payer": { "name": "UnitedHealthcare", "payerId": "UHC-CHOICE" },
+    "dateOfService": "2025-10-22", "dateSubmitted": "2025-10-28",
+    "lineItems": [
+      { "cptCode": "29881", "description": "Arthroscopy, knee, surgical; with meniscectomy", "modifier": "RT", "units": 1, "billedAmount": 6500.00, "allowedAmount": 0, "paidAmount": 0 },
+      { "cptCode": "29877", "description": "Arthroscopy, knee, surgical; debridement/shaving of articular cartilage", "modifier": "59-RT", "units": 1, "billedAmount": 2250.00, "allowedAmount": 0, "paidAmount": 0 }
+    ],
+    "totalBilledAmount": 8750.00, "totalAllowedAmount": 0, "totalPaidAmount": 0,
+    "status": "rejected", "denialReason": "Invalid modifier combination", "denialCode": "CO-4",
+    "payerNotes": "Claim rejected: Modifier 59-RT on line 2 (CPT 29877) is invalid. When billing modifier 59 with an anatomical modifier, modifier 59 should be listed first (59, RT) as separate modifiers, not combined. Please correct and resubmit.",
+    "priorActions": [], "filingDeadline": "2026-04-28"
+  },
+  {
+    "claimId": "CLM-1004",
+    "patient": { "name": "David Kim", "dateOfBirth": "1990-06-18", "memberId": "CIG-332109876" },
+    "provider": { "name": "Dr. Rachel Nguyen", "npi": "4567890123", "specialty": "Internal Medicine", "facility": "Cityview Primary Care" },
+    "payer": { "name": "Cigna", "payerId": "CIGNA-OAP" },
+    "dateOfService": "2025-03-10", "dateSubmitted": "2025-12-15",
+    "lineItems": [
+      { "cptCode": "80053", "description": "Comprehensive metabolic panel", "units": 1, "billedAmount": 125.00, "allowedAmount": 0, "paidAmount": 0 },
+      { "cptCode": "85025", "description": "Complete blood count (CBC) with differential", "units": 1, "billedAmount": 95.00, "allowedAmount": 0, "paidAmount": 0 },
+      { "cptCode": "83036", "description": "Hemoglobin A1c", "units": 1, "billedAmount": 110.00, "allowedAmount": 0, "paidAmount": 0 },
+      { "cptCode": "80061", "description": "Lipid panel", "units": 1, "billedAmount": 120.00, "allowedAmount": 0, "paidAmount": 0 }
+    ],
+    "totalBilledAmount": 450.00, "totalAllowedAmount": 0, "totalPaidAmount": 0,
+    "status": "denied", "denialReason": "Timely filing limit exceeded", "denialCode": "CO-29",
+    "payerNotes": "Claim denied: Submitted beyond the 180-day timely filing limit. Date of service 03/10/2025, claim received 12/15/2025 (280 days). Per your provider agreement, claims must be submitted within 180 days of the date of service. This denial is not appealable unless you can demonstrate the delay was caused by Cigna (e.g., prior claim processing error).",
+    "priorActions": [], "filingDeadline": null
+  },
+  {
+    "claimId": "CLM-1005",
+    "patient": { "name": "Margaret O'Brien", "dateOfBirth": "1955-01-08", "memberId": "MCR-1EG4-TE5-7281" },
+    "provider": { "name": "Dr. Amanda Foster", "npi": "5678901234", "specialty": "Family Medicine", "facility": "Riverside Family Practice" },
+    "payer": { "name": "Medicare Part B", "payerId": "CMS-PARTB" },
+    "dateOfService": "2025-12-03", "dateSubmitted": "2025-12-10",
+    "lineItems": [
+      { "cptCode": "99214", "description": "Office visit, established patient, moderate complexity", "units": 1, "billedAmount": 185.00, "allowedAmount": 0, "paidAmount": 0 },
+      { "cptCode": "36415", "description": "Venipuncture for blood draw", "units": 1, "billedAmount": 30.00, "allowedAmount": 0, "paidAmount": 0 },
+      { "cptCode": "81003", "description": "Urinalysis, automated without microscopy", "units": 1, "billedAmount": 20.00, "allowedAmount": 0, "paidAmount": 0 }
+    ],
+    "totalBilledAmount": 285.00, "totalAllowedAmount": 0, "totalPaidAmount": 0,
+    "status": "rejected", "denialReason": "Duplicate claim", "denialCode": "CO-18",
+    "payerNotes": "Claim rejected as duplicate. An identical claim for the same patient, date of service, and procedure codes was previously submitted and processed under claim reference MCR-20251203-44891. If this represents a distinct service, resubmit with modifier 76 (repeat procedure by same physician) or 77 (repeat procedure by different physician) and include documentation supporting the separate service.",
+    "priorActions": [], "filingDeadline": "2026-06-10"
+  },
+  {
+    "claimId": "CLM-1006",
+    "patient": { "name": "James Wilson", "dateOfBirth": "1978-04-25", "memberId": "HUM-221098765" },
+    "provider": { "name": "Dr. Christopher Lee", "npi": "6789012345", "specialty": "Emergency Medicine", "facility": "St. Mary's Hospital Emergency Department" },
+    "payer": { "name": "Humana Gold Plus", "payerId": "HUM-GOLD" },
+    "dateOfService": "2025-10-05", "dateSubmitted": "2025-10-12",
+    "lineItems": [
+      { "cptCode": "99285", "description": "Emergency department visit, high complexity", "units": 1, "billedAmount": 1800.00, "allowedAmount": 0, "paidAmount": 0 },
+      { "cptCode": "71046", "description": "Chest X-ray, 2 views", "units": 1, "billedAmount": 350.00, "allowedAmount": 0, "paidAmount": 0 },
+      { "cptCode": "93010", "description": "Electrocardiogram, interpretation and report only", "units": 1, "billedAmount": 175.00, "allowedAmount": 0, "paidAmount": 0 },
+      { "cptCode": "36556", "description": "Insertion of central venous catheter", "units": 1, "billedAmount": 2500.00, "allowedAmount": 0, "paidAmount": 0 },
+      { "cptCode": "96374", "description": "IV push, single substance/drug", "units": 3, "billedAmount": 450.00, "allowedAmount": 0, "paidAmount": 0 }
+    ],
+    "totalBilledAmount": 12500.00, "totalAllowedAmount": 0, "totalPaidAmount": 0,
+    "status": "denied", "denialReason": "Coordination of benefits — other payer primary", "denialCode": "CO-22",
+    "payerNotes": "Claim denied: Our records indicate the patient has primary coverage through another carrier (employer-sponsored plan). Per coordination of benefits rules, the primary payer must process this claim first. Please submit to the primary insurer and then resubmit to Humana with the primary payer's Explanation of Benefits (EOB) attached.",
+    "priorActions": [{ "date": "2025-11-01", "type": "information_request", "description": "Called Humana to verify COB information. Representative confirmed they show Employer plan (Anthem) as primary. Contacted patient to verify coverage — patient states Anthem coverage ended 09/30/2025 but Humana has not updated their records.", "outcome": "pending" }],
+    "filingDeadline": "2026-04-12"
+  },
+  {
+    "claimId": "CLM-1007",
+    "patient": { "name": "Patricia Davis", "dateOfBirth": "1962-09-14", "memberId": "ANT-998877665" },
+    "provider": { "name": "Dr. Steven Rodriguez", "npi": "7890123456", "specialty": "Orthopedic Surgery", "facility": "Valley Surgical Center" },
+    "payer": { "name": "Anthem Blue Cross", "payerId": "ANTHEM-BC" },
+    "dateOfService": "2025-10-30", "dateSubmitted": "2025-11-05",
+    "lineItems": [
+      { "cptCode": "27447", "description": "Total knee arthroplasty (replacement)", "modifier": "LT", "units": 1, "billedAmount": 28000.00, "allowedAmount": 15200.00, "paidAmount": 12160.00 },
+      { "cptCode": "20610", "description": "Arthrocentesis, aspiration and/or injection, major joint", "units": 1, "billedAmount": 350.00, "allowedAmount": 0, "paidAmount": 0 },
+      { "cptCode": "99213", "description": "Office visit, established patient, low complexity (pre-op)", "modifier": "25", "units": 1, "billedAmount": 150.00, "allowedAmount": 150.00, "paidAmount": 120.00 }
+    ],
+    "totalBilledAmount": 35000.00, "totalAllowedAmount": 15350.00, "totalPaidAmount": 12280.00,
+    "status": "underpaid", "denialReason": "Allowed amount below contracted rate", "denialCode": "CO-45",
+    "payerNotes": "Processed per contract. Total knee arthroplasty allowed at $15,200 per fee schedule. Arthrocentesis (CPT 20610) bundled into primary surgical procedure — denied as inclusive. 80% of allowed amount paid after deductible met. Patient responsibility: $3,070 (20% coinsurance).",
+    "priorActions": [], "filingDeadline": "2026-05-05"
+  },
+  {
+    "claimId": "CLM-1008",
+    "patient": { "name": "Anthony Brooks", "dateOfBirth": "1995-12-03", "memberId": "BCB-667788990" },
+    "provider": { "name": "Dr. Lisa Chang", "npi": "8901234567", "specialty": "Psychiatry", "facility": "Mindful Health Psychiatric Associates" },
+    "payer": { "name": "Blue Cross Blue Shield of Texas", "payerId": "BCBS-TX" },
+    "dateOfService": "2025-12-10", "dateSubmitted": "2025-12-15",
+    "lineItems": [
+      { "cptCode": "90792", "description": "Psychiatric diagnostic evaluation with medical services", "units": 1, "billedAmount": 350.00, "allowedAmount": null, "paidAmount": 0 },
+      { "cptCode": "90837", "description": "Psychotherapy, 60 minutes", "units": 1, "billedAmount": 250.00, "allowedAmount": null, "paidAmount": 0 }
+    ],
+    "totalBilledAmount": 600.00, "totalAllowedAmount": null, "totalPaidAmount": 0,
+    "status": "pending", "denialReason": null, "denialCode": null,
+    "payerNotes": "Claim is currently under clinical review. Additional processing time required — expected completion within 30 days. No action required at this time.",
+    "priorActions": [], "filingDeadline": "2026-06-15"
+  },
+  {
+    "claimId": "CLM-1009",
+    "patient": { "name": "Karen Mitchell", "dateOfBirth": "1980-07-19", "memberId": "AET-443322110" },
+    "provider": { "name": "Dr. Robert Singh", "npi": "9012345678", "specialty": "Cardiology", "facility": "HeartCare Specialists of Atlanta" },
+    "payer": { "name": "Aetna HMO", "payerId": "AETNA-HMO" },
+    "dateOfService": "2025-11-08", "dateSubmitted": "2025-11-14",
+    "lineItems": [
+      { "cptCode": "99245", "description": "Office consultation, comprehensive (referred by PCP)", "units": 1, "billedAmount": 375.00, "allowedAmount": 0, "paidAmount": 0 },
+      { "cptCode": "93000", "description": "Electrocardiogram, routine, with interpretation and report", "units": 1, "billedAmount": 100.00, "allowedAmount": 0, "paidAmount": 0 }
+    ],
+    "totalBilledAmount": 475.00, "totalAllowedAmount": 0, "totalPaidAmount": 0,
+    "status": "denied", "denialReason": "Out-of-network provider", "denialCode": "CO-11",
+    "payerNotes": "Claim denied: HeartCare Specialists of Atlanta is not a participating provider in the Aetna HMO network. HMO plans require the use of in-network providers except in emergency situations. A PCP referral to an in-network cardiologist is required. If you believe this was an emergency or a PCP referral to this specific provider was authorized, please submit supporting documentation for review.",
+    "priorActions": [], "filingDeadline": "2026-05-14"
+  },
+  {
+    "claimId": "CLM-1010",
+    "patient": { "name": "Thomas Wright", "dateOfBirth": "1958-02-28", "memberId": "UHC-887766554" },
+    "provider": { "name": "Dr. Jennifer Patel", "npi": "0123456789", "specialty": "Diagnostic Radiology", "facility": "Metro Imaging Center" },
+    "payer": { "name": "UnitedHealthcare", "payerId": "UHC-CHOICE" },
+    "dateOfService": "2025-11-20", "dateSubmitted": "2025-11-25",
+    "lineItems": [{ "cptCode": "74178", "description": "CT abdomen and pelvis with contrast", "units": 1, "billedAmount": 2200.00, "allowedAmount": 0, "paidAmount": 0 }],
+    "totalBilledAmount": 2200.00, "totalAllowedAmount": 0, "totalPaidAmount": 0,
+    "status": "rejected", "denialReason": "Missing or invalid information", "denialCode": "CO-16",
+    "payerNotes": "Claim rejected: Missing required referring physician information. CT imaging claims require the referring/ordering physician NPI and name on the claim. Additionally, ICD-10 diagnosis code R10.9 (unspecified abdominal pain) may not meet medical necessity criteria for CT with contrast — a more specific diagnosis code is recommended. Please correct and resubmit.",
+    "priorActions": [], "filingDeadline": "2026-05-25"
+  },
+  {
+    "claimId": "CLM-1011",
+    "patient": { "name": "Jennifer Garcia", "dateOfBirth": "1988-05-12", "memberId": "CIG-110099887" },
+    "provider": { "name": "Dr. William Taylor", "npi": "1122334455", "specialty": "Allergy & Immunology", "facility": "Allergy & Asthma Clinic of Denver" },
+    "payer": { "name": "Cigna PPO", "payerId": "CIGNA-PPO" },
+    "dateOfService": "2025-10-15", "dateSubmitted": "2025-10-20",
+    "lineItems": [
+      { "cptCode": "95004", "description": "Percutaneous allergy skin tests, each test", "units": 40, "billedAmount": 600.00, "allowedAmount": 0, "paidAmount": 0 },
+      { "cptCode": "95024", "description": "Intracutaneous (intradermal) allergy tests, each test", "units": 20, "billedAmount": 400.00, "allowedAmount": 0, "paidAmount": 0 },
+      { "cptCode": "99214", "description": "Office visit, established patient, moderate complexity", "modifier": "25", "units": 1, "billedAmount": 185.00, "allowedAmount": 0, "paidAmount": 0 }
+    ],
+    "totalBilledAmount": 1185.00, "totalAllowedAmount": 0, "totalPaidAmount": 0,
+    "status": "denied", "denialReason": "Not medically necessary — prior treatment not attempted", "denialCode": "CO-50",
+    "payerNotes": "Comprehensive allergy testing denied as not medically necessary. Per Cigna clinical policy, allergy testing of this scope requires documentation of: (1) failed empiric treatment, (2) specific allergen exposure history, and (3) correlation with clinical symptoms. Submitted documentation shows only general complaint of seasonal allergies without prior treatment trial.",
+    "priorActions": [{ "date": "2025-11-15", "type": "peer_to_peer", "description": "Scheduled peer-to-peer review between Dr. Taylor and Cigna medical director for 12/01/2025. Dr. Taylor will present clinical rationale including patient's 3-year symptom history and failure of OTC antihistamines documented in chart notes.", "outcome": "pending" }],
+    "filingDeadline": "2026-04-20"
+  },
+  {
+    "claimId": "CLM-1012",
+    "patient": { "name": "Richard Anderson", "dateOfBirth": "1950-10-07", "memberId": "MCR-1AB2-CD3-4567" },
+    "provider": { "name": "Dr. Susan Miller", "npi": "2233445566", "specialty": "Internal Medicine", "facility": "Downtown Internal Medicine Group" },
+    "payer": { "name": "Medicare Part B", "payerId": "CMS-PARTB" },
+    "dateOfService": "2025-11-18", "dateSubmitted": "2025-11-22",
+    "lineItems": [
+      { "cptCode": "99215", "description": "Office visit, established patient, high complexity", "modifier": "25", "units": 1, "billedAmount": 250.00, "allowedAmount": 163.00, "paidAmount": 130.40 },
+      { "cptCode": "93000", "description": "Electrocardiogram, routine, with interpretation and report", "units": 1, "billedAmount": 125.00, "allowedAmount": 0, "paidAmount": 0 },
+      { "cptCode": "71046", "description": "Chest X-ray, 2 views", "units": 1, "billedAmount": 175.00, "allowedAmount": 72.00, "paidAmount": 57.60 },
+      { "cptCode": "94010", "description": "Spirometry/pulmonary function test", "units": 1, "billedAmount": 150.00, "allowedAmount": 65.00, "paidAmount": 52.00 },
+      { "cptCode": "94760", "description": "Pulse oximetry, single determination", "units": 1, "billedAmount": 50.00, "allowedAmount": 0, "paidAmount": 0 }
+    ],
+    "totalBilledAmount": 850.00, "totalAllowedAmount": 300.00, "totalPaidAmount": 240.00,
+    "status": "underpaid", "denialReason": "Bundled/inclusive procedures", "denialCode": "CO-97",
+    "payerNotes": "EKG (93000) denied — bundled into E/M service per CCI edits. Modifier 25 on E/M code accepted. Pulse oximetry (94760) denied — bundled into spirometry (94010) per CCI edits. Remaining services processed per Medicare Fee Schedule. Patient responsibility: 20% coinsurance after Part B deductible met.",
+    "priorActions": [], "filingDeadline": "2026-05-22"
+  },
+  {
+    "claimId": "CLM-1013",
+    "patient": { "name": "Michelle Turner", "dateOfBirth": "1975-06-20", "memberId": "HUM-554433221" },
+    "provider": { "name": "Dr. Kevin Zhao", "npi": "3344556677", "specialty": "Sports Medicine", "facility": "Peak Performance Sports Medicine" },
+    "payer": { "name": "Humana Choice PPO", "payerId": "HUM-CHOICE" },
+    "dateOfService": "2025-11-01", "dateSubmitted": "2025-11-06",
+    "lineItems": [
+      { "cptCode": "0232T", "description": "Platelet-rich plasma (PRP) injection, tendon/ligament", "units": 1, "billedAmount": 2200.00, "allowedAmount": 0, "paidAmount": 0 },
+      { "cptCode": "76942", "description": "Ultrasound guidance for needle placement", "units": 1, "billedAmount": 500.00, "allowedAmount": 0, "paidAmount": 0 },
+      { "cptCode": "99213", "description": "Office visit, established patient, low complexity", "modifier": "25", "units": 1, "billedAmount": 150.00, "allowedAmount": 0, "paidAmount": 0 }
+    ],
+    "totalBilledAmount": 3200.00, "totalAllowedAmount": 0, "totalPaidAmount": 0,
+    "status": "denied", "denialReason": "Experimental/investigational treatment", "denialCode": "CO-50",
+    "payerNotes": "All services denied. PRP injections (CPT 0232T) are classified as experimental/investigational per Humana clinical policy HUM-2024-0891. This treatment has not received FDA approval and lacks sufficient evidence of efficacy per peer-reviewed literature. Associated services (ultrasound guidance and office visit) denied as related to non-covered procedure. This is a coverage exclusion and is generally not overturnable on appeal.",
+    "priorActions": [], "filingDeadline": "2026-05-06"
+  },
+  {
+    "claimId": "CLM-1014",
+    "patient": { "name": "William Harris", "dateOfBirth": "1965-03-30", "memberId": "ANT-776655443" },
+    "provider": { "name": "Dr. Maria Gonzalez", "npi": "4455667788", "specialty": "Cardiology", "facility": "Pacific Heart Institute" },
+    "payer": { "name": "Anthem Blue Cross", "payerId": "ANTHEM-BC" },
+    "dateOfService": "2025-11-12", "dateSubmitted": "2025-11-18",
+    "lineItems": [
+      { "cptCode": "93306", "description": "Transthoracic echocardiography, complete, with Doppler and color flow", "units": 1, "billedAmount": 1400.00, "allowedAmount": 0, "paidAmount": 0 },
+      { "cptCode": "93320", "description": "Doppler echocardiography, complete", "units": 1, "billedAmount": 300.00, "allowedAmount": 0, "paidAmount": 0 },
+      { "cptCode": "93325", "description": "Doppler echocardiography, color flow mapping", "units": 1, "billedAmount": 200.00, "allowedAmount": 0, "paidAmount": 0 }
+    ],
+    "totalBilledAmount": 1900.00, "totalAllowedAmount": 0, "totalPaidAmount": 0,
+    "status": "rejected", "denialReason": "Invalid or incomplete diagnosis code", "denialCode": "CO-167",
+    "payerNotes": "Claim rejected: Diagnosis code I10 (essential hypertension) alone does not support medical necessity for echocardiography with Doppler. Additionally, CPT 93320 and 93325 are included in CPT 93306 — do not bill separately. Please resubmit with corrected diagnosis code(s) reflecting the clinical indication (e.g., suspected valvular disease, heart failure symptoms, cardiomegaly) and bill only CPT 93306.",
+    "priorActions": [], "filingDeadline": "2026-05-18"
+  },
+  {
+    "claimId": "CLM-1015",
+    "patient": { "name": "Elizabeth Cooper", "dateOfBirth": "1970-12-15", "memberId": "BCB-334455667" },
+    "provider": { "name": "Dr. Andrew Kim", "npi": "5566778899", "specialty": "Medical Oncology", "facility": "Regional Cancer Center" },
+    "payer": { "name": "Blue Cross Blue Shield of Georgia", "payerId": "BCBS-GA" },
+    "dateOfService": "2025-11-25", "dateSubmitted": "2025-12-01",
+    "lineItems": [
+      { "cptCode": "96413", "description": "Chemotherapy IV infusion, first hour", "units": 1, "billedAmount": 3500.00, "allowedAmount": null, "paidAmount": 0 },
+      { "cptCode": "96415", "description": "Chemotherapy IV infusion, each additional hour", "units": 2, "billedAmount": 2800.00, "allowedAmount": null, "paidAmount": 0 },
+      { "cptCode": "96360", "description": "IV hydration infusion, first hour", "units": 1, "billedAmount": 500.00, "allowedAmount": null, "paidAmount": 0 },
+      { "cptCode": "96372", "description": "Therapeutic injection, subcutaneous or intramuscular", "units": 1, "billedAmount": 200.00, "allowedAmount": null, "paidAmount": 0 },
+      { "cptCode": "J9271", "description": "Pembrolizumab injection, 1 mg", "units": 200, "billedAmount": 2800.00, "allowedAmount": null, "paidAmount": 0 }
+    ],
+    "totalBilledAmount": 9800.00, "totalAllowedAmount": null, "totalPaidAmount": 0,
+    "status": "pending", "denialReason": "Additional documentation requested", "denialCode": null,
+    "payerNotes": "Claim pended for medical review. Please submit the following within 30 days: (1) pathology report confirming diagnosis and tumor markers, (2) prior authorization approval letter for pembrolizumab, (3) treatment plan from oncologist, (4) documentation of tumor PD-L1 expression status. Fax to Medical Review at 1-800-555-0199.",
+    "priorActions": [{ "date": "2025-12-20", "type": "documentation_submitted", "description": "Faxed pathology report, prior auth approval letter (Auth #PA-2025-88741), and Dr. Kim's treatment plan to BCBS Medical Review. PD-L1 expression report still pending from lab — expected by 01/10/2026.", "outcome": "pending" }],
+    "filingDeadline": "2026-06-01"
+  }
+]
