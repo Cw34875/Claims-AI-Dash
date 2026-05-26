@@ -654,4 +654,4 @@ if (process.env.NODE_ENV === "development") {
   app.listen(PORT, () => console.log(`Running on ${PORT}`));
 }
 
-export default serverless(app);
+module.exports = serverless(app);
