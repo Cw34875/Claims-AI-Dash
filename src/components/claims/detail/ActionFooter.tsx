@@ -1,10 +1,8 @@
 import { useState } from 'react';
-import type { ClaimAction, AiProposal } from '../../../types';
+import type { ClaimAction } from '../../../types';
 
 interface Props {
-  claimId: string;
   payerName: string;
-  aiProposal?: AiProposal;
   currentAction?: ClaimAction;
   canSubmit: boolean;
   attachedFiles?: File[];
@@ -91,7 +89,7 @@ function ConfirmModal({ payerName, attachedFiles, onConfirm, onCancel }: Confirm
   );
 }
 
-export function ActionFooter({ payerName, aiProposal: _aiProposal, currentAction, canSubmit, attachedFiles = [], onAction }: Props) {
+export function ActionFooter({ payerName, currentAction, canSubmit, attachedFiles = [], onAction }: Props) {
   const [showConfirm, setShowConfirm] = useState(false);
 
   if (currentAction === 'submitted') {

@@ -361,9 +361,7 @@ export function ClaimDetail({
       </div>
 
       <ActionFooter
-        claimId={claim.claimId}
         payerName={claim.payer.name}
-        aiProposal={proposal}
         currentAction={session.action}
         canSubmit={canSubmit}
         attachedFiles={attachedFiles}

@@ -1,86 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import type { AiProposal, FieldEdit } from '../types';
-
-interface LineItemCorrection {
-  lineIndex: number;
-  cptCode?: { current: string; proposed: string };
-  modifier?: { current: string | null; proposed: string | null };
-  units?: { current: number; proposed: number };
-  billedAmount?: { current: number; proposed: number };
-  rationale: string;
-  confidence: 'high' | 'medium' | 'low';
-}
-
-interface ReviewResponse {
-  reasoning: string;
-  recommendedAction: string;
-  confidence: 'high' | 'medium' | 'low';
-  shouldFillClaim: boolean;
-  lineItemCorrections: LineItemCorrection[];
-}
-
-function mapToProposal(claimId: string, data: ReviewResponse): AiProposal {
-  const defaultStatus = data.shouldFillClaim ? 'accepted' : 'pending';
-  const fieldEdits: FieldEdit[] = [];
-
-  for (const c of data.lineItemCorrections) {
-    const line = `Line ${c.lineIndex + 1}`;
-
-    if (c.cptCode) {
-      fieldEdits.push({
-        field: `lineItems[${c.lineIndex}].cptCode`,
-        label: `CPT Code (${line})`,
-        currentValue: c.cptCode.current,
-        proposedValue: c.cptCode.proposed,
-        rationale: c.rationale,
-        confidence: c.confidence,
-        status: defaultStatus,
-      });
-    }
-    if (c.modifier !== undefined) {
-      fieldEdits.push({
-        field: `lineItems[${c.lineIndex}].modifier`,
-        label: `Modifier (${line})`,
-        currentValue: c.modifier.current ?? '',
-        proposedValue: c.modifier.proposed ?? '',
-        rationale: c.rationale,
-        confidence: c.confidence,
-        status: defaultStatus,
-      });
-    }
-    if (c.units) {
-      fieldEdits.push({
-        field: `lineItems[${c.lineIndex}].units`,
-        label: `Units (${line})`,
-        currentValue: String(c.units.current),
-        proposedValue: String(c.units.proposed),
-        rationale: c.rationale,
-        confidence: c.confidence,
-        status: defaultStatus,
-      });
-    }
-    if (c.billedAmount) {
-      fieldEdits.push({
-        field: `lineItems[${c.lineIndex}].billedAmount`,
-        label: `Billed Amount (${line})`,
-        currentValue: c.billedAmount.current.toFixed(2),
-        proposedValue: c.billedAmount.proposed.toFixed(2),
-        rationale: c.rationale,
-        confidence: c.confidence,
-        status: defaultStatus,
-      });
-    }
-  }
-
-  return {
-    claimId,
-    recommendedAction: data.recommendedAction,
-    confidence: data.confidence,
-    reasoning: data.reasoning,
-    fieldEdits,
-    draftText: '',
-  };
-}
+import type { AiProposal } from '../types';
+import { mapToProposal, type ClaimReview } from '../utils/proposals';
 
 export function useAutoProposal(
   claimId: string | null,
@@ -112,11 +32,11 @@ export function useAutoProposal(
 
         if (!res.ok) throw new Error(`Review failed: ${res.status}`);
 
-        const data: ReviewResponse = await res.json();
+        const data: ClaimReview = await res.json();
 
         if (activeClaimId.current !== claimId) return;
 
-        onProposalGenerated(claimId, mapToProposal(claimId, data));
+        onProposalGenerated(claimId, mapToProposal(data));
       } catch (err) {
         if ((err as Error).name !== 'AbortError') console.error('Auto-proposal error:', err);
       } finally {

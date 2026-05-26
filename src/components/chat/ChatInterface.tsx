@@ -19,7 +19,7 @@ export function ChatInterface({ contextKey, selectedClaimId, suggestedPrompts, o
 
   const { messages, sendMessage, status } = useChat({
     transport: new DefaultChatTransport({
-      api: '/api/server/chat',
+      api: '/api/chat',
       body: { claimContext: selectedClaimId ?? undefined },
     }),
   });

@@ -36,7 +36,7 @@ export function useClusterAnalysis(cluster: Cluster) {
       sampleDenialReasons: cluster.sampleDenialReasons,
     };
 
-    fetch('/api/server/analyze-cluster', {
+    fetch('/api/analyze-cluster', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       signal: controller.signal,

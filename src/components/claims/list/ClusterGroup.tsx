@@ -11,7 +11,6 @@ interface Props {
   onSelect: (id: string) => void;
   onProposalGenerated: (claimId: string, proposal: AiProposal) => void;
   onBatchApply: (updates: { claimId: string; proposal: AiProposal }[]) => void;
-  startRank: number;
 }
 
 function fmt$(n: number) {
@@ -24,7 +23,7 @@ const CONFIDENCE_STYLE = {
   low:    'bg-gray-100 text-gray-500',
 };
 
-export function ClusterGroup({ cluster, sessionStates, selectedClaimId, onSelect, onProposalGenerated, onBatchApply, startRank }: Props) {
+export function ClusterGroup({ cluster, sessionStates, selectedClaimId, onSelect, onProposalGenerated, onBatchApply }: Props) {
   const [expanded, setExpanded] = useState(true);
   const [batchOpen, setBatchOpen] = useState(false);
   const { analysis, isLoading } = useClusterAnalysis(cluster);
@@ -132,26 +131,26 @@ export function ClusterGroup({ cluster, sessionStates, selectedClaimId, onSelect
             <table className="w-full border-collapse">
               <thead>
                 <tr className="text-xs text-gray-500 uppercase tracking-wide bg-white border-b border-gray-100">
-                  <th className="px-3 py-1.5 text-center w-12">PRI</th>
                   <th className="px-3 py-1.5 text-left">CLAIM</th>
-                  <th className="px-3 py-1.5 text-left">PAYER · CODE</th>
-                  <th className="px-3 py-1.5 text-right">$</th>
-                  <th className="px-3 py-1.5 text-left">CPT</th>
-                  <th className="px-3 py-1.5 text-left">AI SAYS</th>
+                  <th className="px-3 py-1.5 text-left">PAYER</th>
+                  <th className="px-3 py-1.5 text-left">CODE</th>
+                  <th className="px-3 py-1.5 text-right">BILLED</th>
+                  <th className="px-3 py-1.5 text-right">ALLOWED</th>
+                  <th className="px-3 py-1.5 text-right">PAID</th>
+                  <th className="px-3 py-1.5 text-center">PRIORITY</th>
                   <th className="px-3 py-1.5 text-center">AGE</th>
                   <th className="px-3 py-1.5 text-center">DL</th>
                   <th className="px-3 py-1.5 text-center">STATUS</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
-                {cluster.claims.map((claim, i) => (
+                {cluster.claims.map((claim) => (
                   <ClaimRow
                     key={claim.claimId}
                     claim={claim}
                     session={sessionStates[claim.claimId] ?? { claimId: claim.claimId }}
                     isSelected={claim.claimId === selectedClaimId}
                     onSelect={onSelect}
-                    startRank={startRank + i}
                   />
                 ))}
               </tbody>

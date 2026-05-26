@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { getSortedClaims } from '../utils/claims';
-import type { ClaimSessionState, EnrichedClaim } from '../types';
+import type { ClaimSessionState } from '../types';
 
 export function useClaimsState() {
   // Sorted once on mount — stable for the session (claims are pre-loaded in main.tsx)
@@ -19,9 +19,5 @@ export function useClaimsState() {
     return sessionStates[claimId] ?? { claimId };
   }
 
-  function getEnrichedWithSession(claim: EnrichedClaim) {
-    return { claim, session: getSessionState(claim.claimId) };
-  }
-
-  return { sortedClaims, sessionStates, updateSessionState, getSessionState, getEnrichedWithSession };
+  return { sortedClaims, sessionStates, updateSessionState, getSessionState };
 }

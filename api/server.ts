@@ -13,7 +13,7 @@ const apiKey = process.env.ANTHROPIC_API_KEY;
 const anthropic = createAnthropic({ apiKey, baseURL: 'https://api.anthropic.com/v1' });
 
 const require = createRequire(import.meta.url);
-const rawClaims: EnrichedClaim[] = require('./claims.json');
+const rawClaims: EnrichedClaim[] = require('../claims.json');
 
 // ── Priority helpers (inline so server is self-contained) ──────────────────
 const PAYER_FAMILIES: Record<string, string> = {
@@ -392,7 +392,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.post('/chat', async (req, res) => {
+app.post('/api/chat', async (req, res) => {
   try {
     const { messages, claimContext } = req.body as { messages: unknown[]; claimContext?: string };
 
@@ -503,7 +503,7 @@ function condenseClaim(claim: (typeof allClaims)[number]) {
   };
 }
 
-app.post('/review', async (req, res) => {
+app.post('/api/review', async (req, res) => {
   try {
     const { claimId } = req.body as { claimId: string };
     const claim = allClaims.find((c) => c.claimId === claimId);
@@ -531,7 +531,7 @@ app.post('/review', async (req, res) => {
   }
 });
 
-app.post('/batch-review', async (req, res) => {
+app.post('/api/batch-review', async (req, res) => {
   try {
     const { claimIds } = req.body as { claimIds: string[] };
     const ids = (Array.isArray(claimIds) ? claimIds : []).slice(0, 10);
@@ -615,7 +615,7 @@ Your job:
 
 Be concrete and specific. Avoid generic advice like "review the claims" — name the exact billing rule, modifier, or workflow change needed.`;
 
-app.post('/analyze-cluster', async (req, res) => {
+app.post('/api/analyze-cluster', async (req, res) => {
   try {
     const { cluster } = req.body as { cluster: ClusterSummary };
     if (!cluster?.clusterKey) return res.status(400).json({ error: 'Missing cluster summary' });
@@ -654,4 +654,4 @@ if (process.env.NODE_ENV === "development") {
   app.listen(PORT, () => console.log(`Running on ${PORT}`));
 }
 
-module.exports = serverless(app);
+export default serverless(app);

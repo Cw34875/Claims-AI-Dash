@@ -1,12 +1,11 @@
 import { useState } from 'react';
-import { DEFAULT_FILTERS, applyFilters, hasActiveFilters } from '../utils/filters';
+import { DEFAULT_FILTERS, applyFilters } from '../utils/filters';
 import type { EnrichedClaim, Filters } from '../types';
 
 export function useFilters(allClaims: EnrichedClaim[]) {
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
 
   const filtered = applyFilters(allClaims, filters);
-  const active = hasActiveFilters(filters);
 
   function setPayerFamilies(families: string[]) {
     setFilters((f) => ({ ...f, payerFamilies: families }));
@@ -24,10 +23,6 @@ export function useFilters(allClaims: EnrichedClaim[]) {
     setFilters((f) => ({ ...f, deadlineWithin: days }));
   }
 
-  function setAmountRange(min: number | null, max: number | null) {
-    setFilters((f) => ({ ...f, minAmount: min, maxAmount: max }));
-  }
-
   function setOverdueOnly(value: boolean) {
     setFilters((f) => ({ ...f, overdueOnly: value }));
   }
@@ -36,5 +31,5 @@ export function useFilters(allClaims: EnrichedClaim[]) {
     setFilters(DEFAULT_FILTERS);
   }
 
-  return { filters, filtered, active, setFilters, setPayerFamilies, setDenialCodes, setStatuses, setDeadlineWithin, setAmountRange, setOverdueOnly, resetFilters };
+  return { filters, filtered, setPayerFamilies, setDenialCodes, setStatuses, setDeadlineWithin, setOverdueOnly, resetFilters };
 }
