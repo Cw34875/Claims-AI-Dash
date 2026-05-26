@@ -648,5 +648,10 @@ app.post('/api/analyze-cluster', async (req, res) => {
   }
 });
 
-const PORT = 3001;
-app.listen(PORT, () => console.log(`API server running on :${PORT}`));
+const PORT = process.env.PORT || 3001;
+
+if (process.env.NODE_ENV === "development") {
+  app.listen(PORT, () => console.log(`Running on ${PORT}`));
+}
+
+export default app;
