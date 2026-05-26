@@ -1,15 +1,14 @@
 import express from 'express';
 import cors from 'cors';
 import { createRequire } from 'module';
-import { readFileSync } from 'fs';
 import { streamText, convertToModelMessages, tool, zodSchema, stepCountIs, generateObject } from 'ai';
 import { createAnthropic } from '@ai-sdk/anthropic';
 import { z } from 'zod';
-import type { EnrichedClaim } from './src/types/index.js';
+import type { EnrichedClaim } from '../src/types/index.js';
+import 'dotenv/config';
 
 // Read API key directly from .env to avoid shell environment overrides
-const envContent = readFileSync(new URL('.env', import.meta.url), 'utf-8');
-const apiKey = envContent.match(/ANTHROPIC_API_KEY=(.+)/)?.[1]?.trim() ?? '';
+const apiKey = process.env.ANTHROPIC_API_KEY;
 const anthropic = createAnthropic({ apiKey, baseURL: 'https://api.anthropic.com/v1' });
 
 const require = createRequire(import.meta.url);
