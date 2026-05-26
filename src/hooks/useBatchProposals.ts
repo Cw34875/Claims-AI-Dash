@@ -1,40 +1,6 @@
 import { useEffect, useRef } from 'react';
-import type { EnrichedClaim, AiProposal, ClaimSessionState, FieldEdit } from '../types';
-
-interface ClaimReview {
-  claimId: string;
-  summary: string;
-  recommendedAction: string;
-  confidence: 'high' | 'medium' | 'low';
-  suggestions: Array<{
-    field: string;
-    label: string;
-    currentValue: string;
-    suggestedValue: string;
-    rationale: string;
-    confidence: 'high' | 'medium' | 'low';
-  }>;
-}
-
-function mapToProposal(review: ClaimReview): AiProposal {
-  const fieldEdits: FieldEdit[] = review.suggestions.map((s) => ({
-    field: s.field,
-    label: s.label,
-    currentValue: s.currentValue,
-    proposedValue: s.suggestedValue,
-    rationale: s.rationale,
-    confidence: s.confidence,
-    status: 'pending',
-  }));
-  return {
-    claimId: review.claimId,
-    recommendedAction: review.recommendedAction,
-    confidence: review.confidence,
-    reasoning: review.summary,
-    fieldEdits,
-    draftText: '',
-  };
-}
+import type { EnrichedClaim, AiProposal, ClaimSessionState } from '../types';
+import { mapToProposal, type ClaimReview } from '../utils/proposals';
 
 const BATCH_SIZE = 10;
 
@@ -43,16 +9,12 @@ export function useBatchProposals(
   sessionStates: Record<string, ClaimSessionState>,
   onProposalGenerated: (claimId: string, proposal: AiProposal) => void,
 ) {
-  // Use refs so the effect closure always reads the latest values without
-  // those values becoming effect dependencies (which would cause re-fetching
-  // every time a proposal arrives).
   const sessionStatesRef = useRef(sessionStates);
   sessionStatesRef.current = sessionStates;
 
   const onProposalRef = useRef(onProposalGenerated);
   onProposalRef.current = onProposalGenerated;
 
-  // Key on the ordered claim ID list — changes when filter/status tab changes.
   const claimIdsKey = claims.map((c) => c.claimId).join(',');
 
   useEffect(() => {

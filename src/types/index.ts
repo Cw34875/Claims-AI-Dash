@@ -53,18 +53,37 @@ export interface Cluster {
   denialCode: string;
   claims: EnrichedClaim[];
   totalRecoverability: number;
+  // computed stats used for cluster-level AI analysis
+  avgRecoverability: number;
+  avgDeadlineDays: number | null;
+  claimsOverdue: number;
+  claimsUrgent: number;
+  topCptCodes: string[];
+  submissionDateRange: { earliest: string; latest: string } | null;
+  sampleDenialReasons: string[];
+}
+
+export interface ClusterAnalysis {
+  clusterKey: string;
+  rootCause: string;
+  batchAction: string;
+  confidence: 'high' | 'medium' | 'low';
+  affectsAllClaims: boolean;
+  cachedAt: string;
+  fromCache?: boolean;
 }
 
 export interface Filters {
   payerFamilies: string[];
   denialCodes: string[];
+  statuses: string[];
   minAmount: number | null;
   maxAmount: number | null;
   deadlineWithin: number | null;
   overdueOnly: boolean;
 }
 
-export type ClaimAction = 'skipped' | 'escalated' | 'draft_saved' | 'submitted';
+export type ClaimAction = 'skipped' | 'draft_saved' | 'submitted';
 
 export interface FieldEdit {
   field: string;

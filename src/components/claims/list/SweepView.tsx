@@ -18,12 +18,12 @@ export function SweepView({ claims, sessionStates, selectedClaimId, onSelect }: 
       <table className="w-full border-collapse">
         <thead className="sticky top-0 bg-gray-50 border-b border-gray-200 z-10">
           <tr className="text-xs text-gray-500 uppercase tracking-wide">
-            <th className="px-3 py-2 text-center w-12">PRI</th>
             <th className="px-3 py-2 text-left">CLAIM</th>
             <th className="px-3 py-2 text-left">PAYER</th>
             <th className="px-3 py-2 text-left">CODE</th>
-            <th className="px-3 py-2 text-right">$</th>
-            <th className="px-3 py-2 text-left">CPT</th>
+            <th className="px-3 py-2 text-right">BILLED</th>
+            <th className="px-3 py-2 text-right">ALLOWED</th>
+            <th className="px-3 py-2 text-right">PAID</th>
             <th className="px-3 py-2 text-center">PRIORITY</th>
             <th className="px-3 py-2 text-center">AGE</th>
             <th className="px-3 py-2 text-center">DL</th>
@@ -31,14 +31,13 @@ export function SweepView({ claims, sessionStates, selectedClaimId, onSelect }: 
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-100">
-          {claims.map((claim, i) => (
+          {claims.map((claim) => (
             <ClaimRow
               key={claim.claimId}
               claim={claim}
               session={sessionStates[claim.claimId] ?? { claimId: claim.claimId }}
               isSelected={claim.claimId === selectedClaimId}
               onSelect={onSelect}
-              rank={i + 1}
             />
           ))}
         </tbody>

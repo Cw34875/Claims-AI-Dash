@@ -16,6 +16,10 @@ export function useFilters(allClaims: EnrichedClaim[]) {
     setFilters((f) => ({ ...f, denialCodes: codes }));
   }
 
+  function setStatuses(statuses: string[]) {
+    setFilters((f) => ({ ...f, statuses }));
+  }
+
   function setDeadlineWithin(days: number | null) {
     setFilters((f) => ({ ...f, deadlineWithin: days }));
   }
@@ -32,5 +36,5 @@ export function useFilters(allClaims: EnrichedClaim[]) {
     setFilters(DEFAULT_FILTERS);
   }
 
-  return { filters, filtered, active, setFilters, setPayerFamilies, setDenialCodes, setDeadlineWithin, setAmountRange, setOverdueOnly, resetFilters };
+  return { filters, filtered, active, setFilters, setPayerFamilies, setDenialCodes, setStatuses, setDeadlineWithin, setAmountRange, setOverdueOnly, resetFilters };
 }

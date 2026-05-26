@@ -1,57 +1,60 @@
-import type { EnrichedClaim, ClaimSessionState } from '../../types';
+import type { EnrichedClaim } from '../../types';
 
-type Status = 'denied' | 'rejected' | 'underpaid' | 'pending';
-export type StatusFilterValue = Status | 'all' | 'skipped';
+export type PriorityFilterValue = 'all' | 'high' | 'medium' | 'low';
 
 interface Props {
   allClaims: EnrichedClaim[];
-  sessionStates: Record<string, ClaimSessionState>;
-  activeStatus: StatusFilterValue;
-  onStatusChange: (status: StatusFilterValue) => void;
+  activePriority: PriorityFilterValue;
+  onPriorityChange: (priority: PriorityFilterValue) => void;
 }
 
 function fmt$(n: number) {
   return n >= 1000 ? `$${(n / 1000).toFixed(0)}k` : `$${n.toFixed(0)}`;
 }
 
-const STATUS_CONFIG: { status: StatusFilterValue; label: string; activeClass: string }[] = [
-  { status: 'all', label: 'All', activeClass: 'border-gray-600 text-gray-900' },
-  { status: 'denied', label: 'Denied', activeClass: 'border-red-500 text-red-700' },
-  { status: 'rejected', label: 'Rejected', activeClass: 'border-orange-500 text-orange-700' },
-  { status: 'underpaid', label: 'Underpaid', activeClass: 'border-yellow-500 text-yellow-700' },
-  { status: 'pending', label: 'Pending', activeClass: 'border-blue-500 text-blue-700' },
-  { status: 'skipped', label: 'Skipped', activeClass: 'border-gray-400 text-gray-600' },
+const PRIORITY_CONFIG: {
+  value: PriorityFilterValue;
+  label: string;
+  level: 1 | 2 | 3 | null;
+  activeClass: string;
+  dot: string;
+}[] = [
+  { value: 'high',   label: 'High',   level: 3, activeClass: 'border-red-500 text-red-700',    dot: 'bg-red-500' },
+  { value: 'medium', label: 'Medium', level: 2, activeClass: 'border-amber-500 text-amber-700', dot: 'bg-amber-400' },
+  { value: 'low',    label: 'Low',    level: 1, activeClass: 'border-gray-400 text-gray-600',   dot: 'bg-gray-400' },
+  { value: 'all',    label: 'All',    level: null, activeClass: 'border-indigo-500 text-indigo-700', dot: 'bg-indigo-400' },
 ];
 
-export function StatusTabs({ allClaims, sessionStates, activeStatus, onStatusChange }: Props) {
-  function getStats(status: StatusFilterValue) {
-    const filtered = status === 'all'
-      ? allClaims
-      : status === 'skipped'
-        ? allClaims.filter((c) => sessionStates[c.claimId]?.action === 'skipped')
-        : allClaims.filter((c) => c.status === status);
-    const total = filtered.reduce((s, c) => s + c.recoverability, 0);
-    return { count: filtered.length, total };
+export function PriorityTabs({ allClaims, activePriority, onPriorityChange }: Props) {
+  function getStats(level: 1 | 2 | 3 | null) {
+    const items = level === null ? allClaims : allClaims.filter((c) => c.priorityLevel === level);
+    return {
+      count: items.length,
+      total: items.reduce((s, c) => s + c.recoverability, 0),
+    };
   }
 
   return (
     <div className="flex border-b border-gray-200 bg-white px-3 overflow-x-auto shrink-0">
-      {STATUS_CONFIG.map(({ status, label, activeClass }) => {
-        const { count, total } = getStats(status);
-        const isActive = activeStatus === status;
+      {PRIORITY_CONFIG.map(({ value, label, level, activeClass, dot }) => {
+        const { count, total } = getStats(level);
+        const isActive = activePriority === value;
         return (
           <button
-            key={status}
-            onClick={() => onStatusChange(status)}
+            key={value}
+            onClick={() => onPriorityChange(value)}
             className={`flex items-center gap-1.5 px-3 py-2.5 text-xs border-b-2 whitespace-nowrap transition-colors ${
-              isActive ? `${activeClass} bg-gray-50` : 'border-transparent text-gray-500 hover:text-gray-700'
+              isActive
+                ? `${activeClass} bg-gray-50`
+                : 'border-transparent text-gray-500 hover:text-gray-700'
             }`}
           >
+            <span className={`w-2 h-2 rounded-full ${dot} opacity-80`} />
             <span className="font-semibold">{label}</span>
             <span className={`px-1.5 py-0.5 rounded-full text-xs ${isActive ? 'bg-gray-200' : 'bg-gray-100'}`}>
               {count}
             </span>
-            {count > 0 && status !== 'all' && (
+            {count > 0 && value !== 'all' && (
               <span className="text-gray-400">· {fmt$(total)}</span>
             )}
           </button>

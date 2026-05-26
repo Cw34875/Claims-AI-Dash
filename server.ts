@@ -97,7 +97,9 @@ QUEUE SUMMARY (${allClaims.length} total claims):
 - Total at risk: ${fmt$(totalAtRisk)}
 - Urgent (≤7 days to deadline): ${urgentCount} claims
 
-CRITICAL CONSTRAINT: You are an advisor only. You NEVER take actions directly. Every action requires explicit human approval.`;
+PROPOSING EDITS: When the user asks you to change a claim field (modifier, CPT code, units, billed amount), use the editClaim tool to propose the change. Edits appear as pending suggestions in the UI — the user reviews and accepts or rejects each one before saving. Always confirm what you proposed after calling the tool.
+
+RESPONSE STYLE: Keep every reply to 1-3 sentences. Use bullet points only when listing 3+ items. No preamble, no summaries, no restating the question — just the answer.`;
 
   if (selectedClaimId) {
     const claim = allClaims.find((c) => c.claimId === selectedClaimId);
@@ -111,7 +113,9 @@ CURRENTLY FOCUSED CLAIM: ${claim.claimId}
 - Status: ${claim.status.toUpperCase()} | Denial: ${claim.denialCode ?? 'N/A'} — ${claim.denialReason ?? 'N/A'}
 - Billed: ${fmt$(claim.totalBilledAmount)} | At risk: ${fmt$(rec)}
 - Deadline: ${days !== null ? `${days} days` : 'none'}
-- Payer notes: ${claim.payerNotes ?? 'none'}`;
+- Payer notes: ${claim.payerNotes ?? 'none'}
+- Service lines (use zero-based lineIndex when calling editClaim):
+${claim.lineItems.map((li, i) => `  [${i}] CPT ${li.cptCode}${li.modifier ? ` mod ${li.modifier}` : ''} × ${li.units} — $${li.billedAmount}`).join('\n')}`;
     }
   }
 
@@ -316,6 +320,73 @@ const draftCorrespondenceTool = tool({
   },
 });
 
+const editClaimTool = tool({
+  description:
+    'Propose pending edits to a claim\'s service lines (modifier, CPT code, units, billed amount). Edits appear as suggestions in the UI — the user reviews and accepts or rejects each before saving. Use this when the user explicitly asks you to change or add something to the current claim.',
+  inputSchema: zodSchema(
+    z.object({
+      claimId: z.string().describe('The claim ID to edit'),
+      reasoning: z.string().describe('Why these changes are needed (keep under 400 chars)'),
+      recommendedAction: z.string().describe('Brief label, e.g. "Add modifier 25 to Line 1" (keep under 100 chars)'),
+      confidence: z.enum(['high', 'medium', 'low']),
+      lineItemEdits: z.array(
+        z.object({
+          lineIndex: z.number().int().min(0).describe('Zero-based index of the service line to edit'),
+          cptCode: z.string().optional().describe('New CPT code if changing'),
+          modifier: z.string().regex(/^[A-Z0-9]{2}$/).nullable().optional()
+            .describe('New 2-char modifier (null to remove) if changing'),
+          units: z.number().int().min(1).optional().describe('New unit count if changing'),
+          billedAmount: z.number().positive().optional().describe('New billed amount if changing'),
+          rationale: z.string().describe('One sentence: billing rule or payer policy requiring this change (keep under 200 chars)'),
+          confidence: z.enum(['high', 'medium', 'low']),
+        })
+      ).min(1).max(10),
+    })
+  ),
+  execute: async ({ claimId, reasoning, recommendedAction, confidence, lineItemEdits }) => {
+    const claim = allClaims.find((c) => c.claimId === claimId);
+    if (!claim) return { error: `Claim ${claimId} not found` };
+
+    const lineItemCorrections = lineItemEdits.flatMap((edit) => {
+      const li = claim.lineItems[edit.lineIndex];
+      if (!li) return [];
+      const correction: Record<string, unknown> = {
+        lineIndex: edit.lineIndex,
+        rationale: edit.rationale,
+        confidence: edit.confidence,
+      };
+      if (edit.cptCode !== undefined) correction.cptCode = { current: li.cptCode, proposed: edit.cptCode };
+      if (edit.modifier !== undefined) correction.modifier = { current: li.modifier ?? null, proposed: edit.modifier };
+      if (edit.units !== undefined) correction.units = { current: li.units, proposed: edit.units };
+      if (edit.billedAmount !== undefined) correction.billedAmount = { current: li.billedAmount, proposed: edit.billedAmount };
+      return [correction];
+    });
+
+    return { claimId, reasoning, recommendedAction, confidence, shouldFillClaim: false, lineItemCorrections };
+  },
+});
+
+// ── 24-hour in-memory cache ────────────────────────────────────────────────
+// Key format: `<prefix>::<id>::<YYYY-MM-DD>` — the date component means every
+// entry automatically becomes stale at midnight without any cleanup needed.
+const aiCache = new Map<string, unknown>();
+
+function todayStr(): string {
+  return new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+}
+
+function cacheKey(prefix: string, id: string): string {
+  return `${prefix}::${id}::${todayStr()}`;
+}
+
+function cacheGet<T>(key: string): T | null {
+  return (aiCache.get(key) as T | undefined) ?? null;
+}
+
+function cacheSet(key: string, value: unknown): void {
+  aiCache.set(key, value);
+}
+
 // ── Express app ─────────────────────────────────────────────────────────────
 const app = express();
 app.use(cors());
@@ -324,10 +395,20 @@ app.use(express.json());
 app.post('/api/chat', async (req, res) => {
   try {
     const { messages, claimContext } = req.body as { messages: unknown[]; claimContext?: string };
-    console.log('messages type:', typeof messages, Array.isArray(messages), 'len:', Array.isArray(messages) ? messages.length : 'N/A');
 
-    const modelMessages = await convertToModelMessages(messages as Parameters<typeof convertToModelMessages>[0]);
-    console.log('modelMessages type:', typeof modelMessages, Array.isArray(modelMessages));
+    // Ensure every message has `parts` — convertToModelMessages calls parts.map()
+    // with no guard and will crash if a message arrives without it (e.g. older
+    // useChat format that only sets `content` as a string).
+    type RawMsg = { role?: string; content?: string; parts?: unknown[] };
+    const safeMessages = (Array.isArray(messages) ? messages : []).map((m) => {
+      const msg = m as RawMsg;
+      if (!Array.isArray(msg.parts)) {
+        return { ...msg, parts: msg.content ? [{ type: 'text', text: msg.content }] : [] };
+      }
+      return msg;
+    });
+
+    const modelMessages = await convertToModelMessages(safeMessages as Parameters<typeof convertToModelMessages>[0]);
 
     const result = streamText({
       model: anthropic('claude-sonnet-4-6'),
@@ -338,6 +419,7 @@ app.post('/api/chat', async (req, res) => {
         analyzeClaim: analyzeClaimTool,
         searchSimilarClaims: searchSimilarClaimsTool,
         draftCorrespondence: draftCorrespondenceTool,
+        editClaim: editClaimTool,
       },
       stopWhen: stepCountIs(10),
     });
@@ -350,25 +432,59 @@ app.post('/api/chat', async (req, res) => {
 });
 
 // ── Review schema (shared by single + batch endpoints) ────────────────────
-const claimReviewSchema = z.object({
-  claimId: z.string(),
-  summary: z.string().describe('1-2 sentence root cause summary'),
-  recommendedAction: z.string().describe('Primary recommended next step, e.g. "Appeal with medical records"'),
+
+const lineItemCorrectionSchema = z.object({
+  lineIndex: z.number().int().min(0)
+    .describe('Zero-based index into the claim lineItems array'),
+  cptCode: z.object({
+    current: z.string().describe('Exact current CPT code value from the claim'),
+    proposed: z.string().regex(/^\d{4,5}[A-Z0-9]?$/)
+      .describe('Corrected CPT/HCPCS code — digits only, e.g. "99213" or "G0438". NO text, NO explanation.'),
+  }).optional().describe('Omit if CPT code does not need to change'),
+  modifier: z.object({
+    current: z.string().nullable().describe('Current modifier, or null if absent'),
+    proposed: z.string().regex(/^[A-Z0-9]{2}$/).nullable()
+      .describe('Corrected 2-character modifier, e.g. "25", "59", "GT". Null to remove. NO text.'),
+  }).optional().describe('Omit if modifier does not need to change'),
+  units: z.object({
+    current: z.number().int().describe('Current unit count'),
+    proposed: z.number().int().min(1).describe('Corrected unit count — positive integer ONLY. No text.'),
+  }).optional().describe('Omit if units do not need to change'),
+  billedAmount: z.object({
+    current: z.number().describe('Current billed amount in dollars'),
+    proposed: z.number().positive().describe('Corrected billed amount — numeric dollar value ONLY, e.g. 150.00. No $ symbol, no text.'),
+  }).optional().describe('Omit if billed amount does not need to change'),
+  rationale: z.string()
+    .describe('One sentence: which billing rule or payer policy requires this specific change (keep under 200 chars)'),
   confidence: z.enum(['high', 'medium', 'low']),
-  suggestions: z.array(z.object({
-    field: z.string().describe('Technical field identifier, e.g. "lineItems[0].cptCode"'),
-    label: z.string().describe('Human-readable name, e.g. "CPT Code (Line 1)"'),
-    currentValue: z.string().describe('The current value in the claim, or empty string if absent'),
-    suggestedValue: z.string().describe('The recommended corrected value'),
-    rationale: z.string().describe('One sentence explaining why this change helps'),
-    confidence: z.enum(['high', 'medium', 'low']),
-  })).describe('Specific field-level corrections. Only include changes that are actionable and clinically justified.'),
 });
 
-const REVIEW_SYSTEM = `You are a medical billing expert reviewing claims for a revenue cycle team.
-Analyze each claim and identify the root cause of the issue, then suggest specific, actionable field corrections.
-Focus on: incorrect/missing CPT codes, modifiers, ICD-10 codes, billing amounts, place-of-service errors, timely filing workarounds, and documentation gaps.
-Only suggest changes that are clinically and financially justified. Do not speculate.`;
+const claimReviewSchema = z.object({
+  claimId: z.string(),
+  reasoning: z.string().describe('Root cause analysis: why was this claim denied or underpaid (keep under 400 chars)'),
+  recommendedAction: z.string().describe('Brief action label, e.g. "Refile with modifier -25" or "Appeal with medical records" (keep under 100 chars)'),
+  confidence: z.enum(['high', 'medium', 'low']),
+  shouldFillClaim: z.boolean()
+    .describe('Set TRUE only when corrections are unambiguous billing rule violations with no clinical judgment required (e.g. a clearly missing required modifier, an obvious code mismatch per LCD). Set FALSE when the correction requires clinical documentation review or payer-specific knowledge.'),
+  lineItemCorrections: z.array(lineItemCorrectionSchema).max(10)
+    .describe('Typed corrections per line item. Only include a field if it needs to change. Each value field must contain ONLY the raw value — never include explanatory text inside a value field.'),
+});
+
+const REVIEW_SYSTEM = `You are a medical billing expert reviewing claims for a revenue cycle management team.
+
+Your job: identify the root cause and output strictly typed field corrections.
+
+RULES FOR CORRECTIONS:
+- cptCode.proposed: raw code only (e.g. "99214"). Never include words or explanation.
+- modifier.proposed: exactly 2 alphanumeric characters (e.g. "25") or null to remove. Never include words.
+- units.proposed: a positive integer (e.g. 2). Never include words.
+- billedAmount.proposed: a positive decimal (e.g. 275.00). Never include $ or words.
+- Omit any field from a correction if it does not need to change.
+- Only include corrections that are actionable and based on identifiable billing rules or payer policies.
+- Do not speculate or invent corrections without clear justification from the denial reason or payer notes.
+
+shouldFillClaim = true: reserved for unambiguous, rule-based fixes only (missing required modifier, obvious code mismatch).
+shouldFillClaim = false: use when clinical judgment or documentation is needed.`;
 
 function condenseClaim(claim: (typeof allClaims)[number]) {
   return {
@@ -393,13 +509,21 @@ app.post('/api/review', async (req, res) => {
     const claim = allClaims.find((c) => c.claimId === claimId);
     if (!claim) return res.status(404).json({ error: `Claim ${claimId} not found` });
 
+    const key = cacheKey('review', claimId);
+    const cached = cacheGet<unknown>(key);
+    if (cached) {
+      console.log(`[cache hit] review ${claimId}`);
+      return res.json(cached);
+    }
+
     const { object } = await generateObject({
       model: anthropic('claude-sonnet-4-6'),
-      schema: claimReviewSchema,
+      schema: zodSchema(claimReviewSchema),
       system: REVIEW_SYSTEM,
-      prompt: `Review this claim:\n${JSON.stringify(condenseClaim(claim), null, 2)}`,
+      prompt: `Review this claim and output strictly typed corrections. Remember: value fields must contain ONLY raw values, never explanatory text.\n\n${JSON.stringify(condenseClaim(claim), null, 2)}`,
     });
 
+    cacheSet(key, object);
     res.json(object);
   } catch (err) {
     console.error(err);
@@ -411,17 +535,113 @@ app.post('/api/batch-review', async (req, res) => {
   try {
     const { claimIds } = req.body as { claimIds: string[] };
     const ids = (Array.isArray(claimIds) ? claimIds : []).slice(0, 10);
-    const claims = ids.map((id) => allClaims.find((c) => c.claimId === id)).filter(Boolean) as typeof allClaims;
-    if (claims.length === 0) return res.status(400).json({ error: 'No valid claims' });
+    const allRequested = ids.map((id) => allClaims.find((c) => c.claimId === id)).filter(Boolean) as typeof allClaims;
+    if (allRequested.length === 0) return res.status(400).json({ error: 'No valid claims' });
+
+    // Split into cached hits and claims that still need AI analysis
+    const cachedReviews: unknown[] = [];
+    const uncachedClaims: typeof allClaims = [];
+
+    for (const claim of allRequested) {
+      const key = cacheKey('review', claim.claimId);
+      const hit = cacheGet<unknown>(key);
+      if (hit) {
+        console.log(`[cache hit] batch-review ${claim.claimId}`);
+        cachedReviews.push(hit);
+      } else {
+        uncachedClaims.push(claim);
+      }
+    }
+
+    let freshReviews: unknown[] = [];
+    if (uncachedClaims.length > 0) {
+      const { object } = await generateObject({
+        model: anthropic('claude-sonnet-4-6'),
+        schema: zodSchema(z.object({ reviews: z.array(claimReviewSchema) })),
+        system: REVIEW_SYSTEM,
+        prompt: `Review these ${uncachedClaims.length} claims and return one entry per claim. Value fields must contain ONLY raw values, never explanatory text:\n${JSON.stringify(uncachedClaims.map(condenseClaim), null, 2)}`,
+      });
+
+      // Cache each result individually
+      for (const review of object.reviews) {
+        const key = cacheKey('review', (review as { claimId: string }).claimId);
+        cacheSet(key, review);
+      }
+      freshReviews = object.reviews;
+    }
+
+    res.json({ reviews: [...cachedReviews, ...freshReviews] });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// ── Cluster analysis ───────────────────────────────────────────────────────
+
+interface ClusterSummary {
+  clusterKey: string;
+  payerFamily: string;
+  denialCode: string;
+  claimCount: number;
+  totalRecoverability: number;
+  avgRecoverability: number;
+  avgDeadlineDays: number | null;
+  claimsOverdue: number;
+  claimsUrgent: number;
+  topCptCodes: string[];
+  submissionDateRange: { earliest: string; latest: string } | null;
+  sampleDenialReasons: string[];
+}
+
+const clusterAnalysisSchema = z.object({
+  rootCause: z.string()
+    .describe('Clear explanation of WHY these claims are systematically denied — be specific about the billing workflow or policy issue (keep under 400 chars)'),
+  batchAction: z.string()
+    .describe('The single highest-leverage action to resolve or recover most claims in this cluster (keep under 250 chars)'),
+  confidence: z.enum(['high', 'medium', 'low'])
+    .describe('How confident you are in the root cause given the available data'),
+  affectsAllClaims: z.boolean()
+    .describe('True if the root cause and action apply uniformly to every claim; false if individual review is still needed'),
+});
+
+const CLUSTER_SYSTEM = `You are a medical billing expert analyzing a pattern of denied or rejected claims.
+
+You are given a SUMMARY of claims sharing the same payer and denial code — not individual claim details.
+Your job:
+1. Identify the root cause: WHY are these claims systematically denied? Look for workflow issues, missing documentation patterns, coding errors, or payer-specific policy triggers.
+2. Recommend the single best batch action to resolve or recover the most value with the least effort.
+3. Assess whether the fix applies uniformly or if individual review is still needed.
+
+Be concrete and specific. Avoid generic advice like "review the claims" — name the exact billing rule, modifier, or workflow change needed.`;
+
+app.post('/api/analyze-cluster', async (req, res) => {
+  try {
+    const { cluster } = req.body as { cluster: ClusterSummary };
+    if (!cluster?.clusterKey) return res.status(400).json({ error: 'Missing cluster summary' });
+    if (cluster.claimCount < 2) return res.status(400).json({ error: 'Cluster too small to analyze' });
+
+    const key = cacheKey('cluster', cluster.clusterKey);
+    const cached = cacheGet<object>(key);
+    if (cached) {
+      console.log(`[cache hit] cluster ${cluster.clusterKey}`);
+      return res.json({ ...cached, fromCache: true });
+    }
 
     const { object } = await generateObject({
       model: anthropic('claude-sonnet-4-6'),
-      schema: z.object({ reviews: z.array(claimReviewSchema) }),
-      system: REVIEW_SYSTEM,
-      prompt: `Review these ${claims.length} claims and return one entry per claim:\n${JSON.stringify(claims.map(condenseClaim), null, 2)}`,
+      schema: zodSchema(clusterAnalysisSchema),
+      system: CLUSTER_SYSTEM,
+      prompt: `Analyze this claim cluster and identify the root cause and batch action:\n\n${JSON.stringify(cluster, null, 2)}`,
     });
 
-    res.json(object);
+    const result = {
+      ...object,
+      clusterKey: cluster.clusterKey,
+      cachedAt: new Date().toISOString(),
+    };
+    cacheSet(key, result);
+    res.json(result);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Internal server error' });

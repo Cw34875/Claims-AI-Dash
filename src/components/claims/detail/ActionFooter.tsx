@@ -7,16 +7,18 @@ interface Props {
   aiProposal?: AiProposal;
   currentAction?: ClaimAction;
   canSubmit: boolean;
+  attachedFiles?: File[];
   onAction: (action: ClaimAction) => void;
 }
 
 interface ConfirmModalProps {
   payerName: string;
+  attachedFiles: File[];
   onConfirm: () => void;
   onCancel: () => void;
 }
 
-function ConfirmModal({ payerName, onConfirm, onCancel }: ConfirmModalProps) {
+function ConfirmModal({ payerName, attachedFiles, onConfirm, onCancel }: ConfirmModalProps) {
   const [checks, setChecks] = useState({ reviewed: false, verified: false, confirmed: false });
   const allChecked = checks.reviewed && checks.verified && checks.confirmed;
 
@@ -31,6 +33,24 @@ function ConfirmModal({ payerName, onConfirm, onCancel }: ConfirmModalProps) {
         <p className="text-sm text-gray-600 mb-4">
           You are about to submit this appeal to <strong>{payerName}</strong>.
         </p>
+
+        {attachedFiles.length > 0 && (
+          <div className="mb-4">
+            <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
+              Attached files ({attachedFiles.length})
+            </div>
+            <ul className="space-y-1 max-h-28 overflow-y-auto">
+              {attachedFiles.map((f, i) => (
+                <li key={i} className="flex items-center gap-1.5 text-xs text-gray-600 bg-gray-50 rounded px-2 py-1">
+                  <svg className="w-3 h-3 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                  </svg>
+                  <span className="truncate">{f.name}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         <div className="space-y-2 mb-4">
           {([
@@ -71,9 +91,8 @@ function ConfirmModal({ payerName, onConfirm, onCancel }: ConfirmModalProps) {
   );
 }
 
-export function ActionFooter({ payerName, aiProposal, currentAction, canSubmit, onAction }: Props) {
+export function ActionFooter({ payerName, aiProposal: _aiProposal, currentAction, canSubmit, attachedFiles = [], onAction }: Props) {
   const [showConfirm, setShowConfirm] = useState(false);
-  const isWriteOff = aiProposal?.isWriteOff;
 
   if (currentAction === 'submitted') {
     return (
@@ -88,12 +107,13 @@ export function ActionFooter({ payerName, aiProposal, currentAction, canSubmit, 
       {showConfirm && (
         <ConfirmModal
           payerName={payerName}
+          attachedFiles={attachedFiles}
           onConfirm={() => { setShowConfirm(false); onAction('submitted'); }}
           onCancel={() => setShowConfirm(false)}
         />
       )}
       <div className="border-t border-gray-200 px-4 py-3 flex items-center justify-between bg-white gap-2">
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
           <button
             onClick={() => onAction('skipped')}
             className="px-3 py-1.5 text-xs border border-gray-300 rounded hover:bg-gray-50 text-gray-600"
@@ -101,36 +121,26 @@ export function ActionFooter({ payerName, aiProposal, currentAction, canSubmit, 
             Skip
           </button>
           <button
-            onClick={() => onAction('escalated')}
-            className="px-3 py-1.5 text-xs border border-purple-300 rounded hover:bg-purple-50 text-purple-700"
-          >
-            Escalate
-          </button>
-          <button
             onClick={() => onAction('draft_saved')}
             className="px-3 py-1.5 text-xs border border-yellow-300 rounded hover:bg-yellow-50 text-yellow-700"
           >
             Save Draft
           </button>
+          {attachedFiles.length > 0 && (
+            <span className="text-xs text-gray-400">
+              {attachedFiles.length} file{attachedFiles.length > 1 ? 's' : ''} attached
+            </span>
+          )}
         </div>
 
-        {isWriteOff ? (
-          <button
-            onClick={() => onAction('escalated')}
-            className="px-4 py-1.5 text-xs bg-red-600 text-white rounded hover:bg-red-700"
-          >
-            Request Write-Off Approval
-          </button>
-        ) : (
-          <button
-            onClick={() => setShowConfirm(true)}
-            disabled={!canSubmit}
-            className="px-4 py-1.5 text-xs bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed"
-            title={!canSubmit ? 'Review AI proposal or add a draft first' : undefined}
-          >
-            Submit Appeal
-          </button>
-        )}
+        <button
+          onClick={() => setShowConfirm(true)}
+          disabled={!canSubmit}
+          className="px-4 py-1.5 text-xs bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed"
+          title={!canSubmit ? 'Accept a suggestion, edit the draft, or attach a file first' : undefined}
+        >
+          Submit Appeal
+        </button>
       </div>
     </>
   );

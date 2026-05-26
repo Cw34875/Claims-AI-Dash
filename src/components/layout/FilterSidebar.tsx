@@ -1,11 +1,13 @@
 import { useState } from 'react';
-import type { EnrichedClaim, Filters } from '../../types';
+import type { EnrichedClaim, Filters, ClaimSessionState } from '../../types';
 
 interface Props {
   allClaims: EnrichedClaim[];
+  sessionStates: Record<string, ClaimSessionState>;
   filters: Filters;
   onPayerFamiliesChange: (families: string[]) => void;
   onDenialCodesChange: (codes: string[]) => void;
+  onStatusesChange: (statuses: string[]) => void;
   onDeadlineWithinChange: (days: number | null) => void;
   onOverdueOnlyChange: (value: boolean) => void;
   onReset: () => void;
@@ -17,8 +19,17 @@ function toggle<T>(arr: T[], val: T): T[] {
   return arr.includes(val) ? arr.filter((x) => x !== val) : [...arr, val];
 }
 
+const STATUS_OPTIONS: { value: string; label: string; color: string }[] = [
+  { value: 'denied',    label: 'Denied',    color: 'text-red-600' },
+  { value: 'rejected',  label: 'Rejected',  color: 'text-orange-600' },
+  { value: 'underpaid', label: 'Underpaid', color: 'text-yellow-600' },
+  { value: 'pending',   label: 'Pending',   color: 'text-blue-600' },
+  { value: 'skipped',   label: 'Skipped',   color: 'text-gray-500' },
+];
+
 export function FilterSidebar({
-  allClaims, filters, onPayerFamiliesChange, onDenialCodesChange, onDeadlineWithinChange, onOverdueOnlyChange, onReset, collapsed, onToggleCollapse,
+  allClaims, sessionStates, filters, onPayerFamiliesChange, onDenialCodesChange, onStatusesChange,
+  onDeadlineWithinChange, onOverdueOnlyChange, onReset, collapsed, onToggleCollapse,
 }: Props) {
   const [payerSearch, setPayerSearch] = useState('');
   const [denialSearch, setDenialSearch] = useState('');
@@ -33,6 +44,13 @@ export function FilterSidebar({
   const filteredDenialCodes = denialSearch
     ? denialCodes.filter((c) => c.toLowerCase().includes(denialSearch.toLowerCase()))
     : denialCodes;
+
+  function statusCount(value: string) {
+    if (value === 'skipped') {
+      return allClaims.filter((c) => sessionStates[c.claimId]?.action === 'skipped').length;
+    }
+    return allClaims.filter((c) => c.status === value).length;
+  }
 
   if (collapsed) {
     return (
@@ -57,6 +75,30 @@ export function FilterSidebar({
       </div>
 
       <div className="p-3 space-y-4">
+        {/* Status */}
+        <div>
+          <div className="text-xs font-semibold text-gray-600 mb-2">Status</div>
+          <div className="space-y-1">
+            {STATUS_OPTIONS.map(({ value, label, color }) => {
+              const count = statusCount(value);
+              return (
+                <label key={value} className={`flex items-center justify-between gap-2 cursor-pointer text-xs hover:text-gray-900 ${color}`}>
+                  <span className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={filters.statuses.includes(value)}
+                      onChange={() => onStatusesChange(toggle(filters.statuses, value))}
+                      className="rounded text-indigo-600"
+                    />
+                    {label}
+                  </span>
+                  <span className="text-gray-400 font-normal">{count}</span>
+                </label>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Payer */}
         <div>
           <div className="text-xs font-semibold text-gray-600 mb-2">Payer</div>

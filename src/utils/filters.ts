@@ -3,6 +3,7 @@ import type { EnrichedClaim, Filters } from '../types';
 export const DEFAULT_FILTERS: Filters = {
   payerFamilies: [],
   denialCodes: [],
+  statuses: [],
   minAmount: null,
   maxAmount: null,
   deadlineWithin: null,
@@ -29,6 +30,7 @@ export function hasActiveFilters(filters: Filters): boolean {
   return (
     filters.payerFamilies.length > 0 ||
     filters.denialCodes.length > 0 ||
+    filters.statuses.length > 0 ||
     filters.minAmount !== null ||
     filters.maxAmount !== null ||
     filters.deadlineWithin !== null ||

@@ -11,6 +11,34 @@
     "payerNotes": "Claim denied: Prior authorization is required for advanced imaging (MRI/CT/PET). No authorization number found on file for date of service 11/15/2025. You may request a retroactive authorization by contacting our Utilization Management department at 1-800-555-0101.",
     "priorActions": [], "filingDeadline": "2026-05-20"
   },
+  {"claimId": "CLM-1001",
+    "patient": { "name": "Kelly Johnson", "dateOfBirth": "1985-03-13", "memberId": "BCB-889012343" },
+    "provider": { "name": "Dr. Michael Chen", "npi": "1234567890", "specialty": "Orthopedic Surgery", "facility": "Oakwood Orthopedic Associates" },
+    "payer": { "name": "Blue Cross Blue Shield of Illinois", "payerId": "BCBS-IL" },
+    "dateOfService": "2025-11-15", "dateSubmitted": "2025-11-25",
+    "lineItems": [{ "cptCode": "73721", "description": "MRI of lower extremity joint without contrast", "units": 1, "billedAmount": 1850.00, "allowedAmount": 0, "paidAmount": 0 }],
+    "totalBilledAmount": 1850.00, "totalAllowedAmount": 0, "totalPaidAmount": 0,
+    "status": "denied", "denialReason": "Missing prior authorization", "denialCode": "CO-197",
+    "payerNotes": "Claim denied: Prior authorization is required for advanced imaging (MRI/CT/PET). No authorization number found on file for date of service 11/15/2025. You may request a retroactive authorization by contacting our Utilization Management department at 1-800-555-0101.",
+    "priorActions": [], "filingDeadline": "2026-05-10"
+  },
+  {
+    "claimId": "CLM-1002",
+    "patient": { "name": "John Doe", "dateOfBirth": "1972-08-22", "memberId": "AET-776543212" },
+    "provider": { "name": "Dr. Emily Watson", "npi": "2345678901", "specialty": "Physical Medicine & Rehabilitation", "facility": "Summit Physical Therapy Center" },
+    "payer": { "name": "Aetna", "payerId": "AETNA-PPO" },
+    "dateOfService": "2025-09-01", "dateSubmitted": "2025-09-12",
+    "lineItems": [
+      { "cptCode": "97110", "description": "Therapeutic exercises, each 15 minutes", "units": 4, "billedAmount": 200.00, "allowedAmount": 0, "paidAmount": 0 },
+      { "cptCode": "97140", "description": "Manual therapy techniques, each 15 minutes", "units": 2, "billedAmount": 100.00, "allowedAmount": 0, "paidAmount": 0 },
+      { "cptCode": "97530", "description": "Therapeutic activities, each 15 minutes", "units": 2, "billedAmount": 100.00, "allowedAmount": 0, "paidAmount": 0 }
+    ],
+    "totalBilledAmount": 2400.00, "totalAllowedAmount": 0, "totalPaidAmount": 0,
+    "status": "denied", "denialReason": "Not medically necessary", "denialCode": "CO-50",
+    "payerNotes": "Services denied as not medically necessary. Documentation submitted does not support the need for continued physical therapy beyond the initial 8-visit authorization. Patient has not demonstrated measurable functional improvement per submitted progress notes. Peer-to-peer review may be requested within 30 days.",
+    "priorActions": [{ "date": "2025-10-05", "type": "appeal", "description": "Submitted initial appeal with updated progress notes showing 15% improvement in range of motion and functional outcome scores. Appeal denied 10/25 — payer states improvement is insufficient to justify additional sessions.", "outcome": "denied" }],
+    "filingDeadline": "2026-03-20"
+  },
   {
     "claimId": "CLM-1002",
     "patient": { "name": "Robert Martinez", "dateOfBirth": "1972-08-22", "memberId": "AET-776543210" },
@@ -42,6 +70,21 @@
     "status": "rejected", "denialReason": "Invalid modifier combination", "denialCode": "CO-4",
     "payerNotes": "Claim rejected: Modifier 59-RT on line 2 (CPT 29877) is invalid. When billing modifier 59 with an anatomical modifier, modifier 59 should be listed first (59, RT) as separate modifiers, not combined. Please correct and resubmit.",
     "priorActions": [], "filingDeadline": "2026-04-28"
+  },
+  {
+    "claimId": "CLM-1003",
+    "patient": { "name": "Mariah Thompson", "dateOfBirth": "1978-11-20", "memberId": "UHC-554321099" },
+    "provider": { "name": "Dr. James Park", "npi": "3456789012", "specialty": "Orthopedic Surgery", "facility": "Northwest Surgical Center" },
+    "payer": { "name": "UnitedHealthcare", "payerId": "UHC-CHOICE" },
+    "dateOfService": "2025-10-22", "dateSubmitted": "2025-10-20",
+    "lineItems": [
+      { "cptCode": "29881", "description": "Arthroscopy, knee, surgical; with meniscectomy", "modifier": "RT", "units": 1, "billedAmount": 6500.00, "allowedAmount": 0, "paidAmount": 0 },
+      { "cptCode": "29877", "description": "Arthroscopy, knee, surgical; debridement/shaving of articular cartilage", "modifier": "59-RT", "units": 1, "billedAmount": 2250.00, "allowedAmount": 0, "paidAmount": 0 }
+    ],
+    "totalBilledAmount": 8750.00, "totalAllowedAmount": 0, "totalPaidAmount": 0,
+    "status": "rejected", "denialReason": "Invalid modifier combination", "denialCode": "CO-4",
+    "payerNotes": "Claim rejected: Modifier 59-RT on line 2 (CPT 29877) is invalid. When billing modifier 59 with an anatomical modifier, modifier 59 should be listed first (59, RT) as separate modifiers, not combined. Please correct and resubmit.",
+    "priorActions": [], "filingDeadline": "2026-04-29"
   },
   {
     "claimId": "CLM-1004",

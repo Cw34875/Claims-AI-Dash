@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import type { EnrichedClaim, ClaimSessionState } from '../../../types';
+import type { EnrichedClaim, ClaimSessionState, AiProposal } from '../../../types';
 import { buildClusters } from '../../../utils/clusters';
 import { ClusterGroup } from './ClusterGroup';
 
@@ -8,11 +8,12 @@ interface Props {
   sessionStates: Record<string, ClaimSessionState>;
   selectedClaimId: string | null;
   onSelect: (id: string) => void;
+  onProposalGenerated: (claimId: string, proposal: AiProposal) => void;
+  onBatchApply: (updates: { claimId: string; proposal: AiProposal }[]) => void;
 }
 
-export function ClusterView({ claims, sessionStates, selectedClaimId, onSelect }: Props) {
+export function ClusterView({ claims, sessionStates, selectedClaimId, onSelect, onProposalGenerated, onBatchApply }: Props) {
   const clusters = useMemo(() => buildClusters(claims), [claims]);
-
   const unclustered = claims.filter((c) => !c.denialCode);
 
   if (clusters.length === 0 && unclustered.length === 0) {
@@ -33,6 +34,8 @@ export function ClusterView({ claims, sessionStates, selectedClaimId, onSelect }
             sessionStates={sessionStates}
             selectedClaimId={selectedClaimId}
             onSelect={onSelect}
+            onProposalGenerated={onProposalGenerated}
+            onBatchApply={onBatchApply}
             startRank={startRank}
           />
         );

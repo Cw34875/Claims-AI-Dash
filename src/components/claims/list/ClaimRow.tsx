@@ -1,14 +1,17 @@
 import type { EnrichedClaim, ClaimSessionState } from '../../../types';
-import { PriorityIcon } from './PriorityIcon';
 import { DeadlineBadge } from './DeadlineBadge';
-import { AiHintCell } from './AiHintCell';
+
+const LEVEL_STYLES: Record<number, { label: string; cls: string }> = {
+  3: { label: 'high',   cls: 'bg-red-100 text-red-700' },
+  2: { label: 'medium', cls: 'bg-yellow-100 text-yellow-700' },
+  1: { label: 'low',    cls: 'bg-green-100 text-green-700' },
+};
 
 interface Props {
   claim: EnrichedClaim;
   session: ClaimSessionState;
   isSelected: boolean;
   onSelect: (id: string) => void;
-  rank: number;
 }
 
 function fmt$(n: number) {
@@ -25,12 +28,10 @@ const STATUS_COLORS: Record<string, string> = {
 const ACTION_BADGE: Record<string, string> = {
   submitted: 'bg-green-100 text-green-700',
   skipped: 'bg-gray-100 text-gray-500',
-  escalated: 'bg-purple-100 text-purple-700',
   draft_saved: 'bg-yellow-100 text-yellow-700',
 };
 
-export function ClaimRow({ claim, session, isSelected, onSelect, rank }: Props) {
-  const cptCodes = claim.lineItems.map((li) => li.cptCode).join(', ');
+export function ClaimRow({ claim, session, isSelected, onSelect }: Props) {
   const ageDays = Math.floor((Date.now() - new Date(claim.dateSubmitted).getTime()) / 86400000);
 
   return (
@@ -38,12 +39,6 @@ export function ClaimRow({ claim, session, isSelected, onSelect, rank }: Props) 
       className={`cursor-pointer text-sm hover:bg-blue-50 transition-colors ${isSelected ? 'bg-blue-50 border-l-2 border-blue-500' : 'border-l-2 border-transparent'}`}
       onClick={() => onSelect(claim.claimId)}
     >
-      <td className="px-3 py-2 text-center">
-        <div className="flex items-center gap-1 justify-center">
-          <PriorityIcon level={claim.priorityLevel} />
-          <span className="text-xs text-gray-400">{rank}</span>
-        </div>
-      </td>
       <td className="px-3 py-2">
         <div className="font-mono text-xs font-medium text-gray-900">{claim.claimId}</div>
         <div className="text-xs text-gray-500 truncate max-w-[120px]">{claim.patient.name}</div>
@@ -59,13 +54,18 @@ export function ClaimRow({ claim, session, isSelected, onSelect, rank }: Props) 
         )}
       </td>
       <td className="px-3 py-2 text-right">
-        <span className="text-sm font-semibold text-gray-900">{fmt$(claim.recoverability)}</span>
+        <span className="text-xs font-semibold text-gray-900">{fmt$(claim.totalBilledAmount)}</span>
       </td>
-      <td className="px-3 py-2">
-        <span className="text-xs text-gray-500 font-mono">{cptCodes.slice(0, 18)}{cptCodes.length > 18 ? '…' : ''}</span>
+      <td className="px-3 py-2 text-right">
+        <span className="text-xs text-gray-700">{claim.totalAllowedAmount != null ? fmt$(claim.totalAllowedAmount) : '—'}</span>
       </td>
-      <td className="px-3 py-2">
-        <AiHintCell hint={claim.aiHint} />
+      <td className="px-3 py-2 text-right">
+        <span className="text-xs text-gray-700">{fmt$(claim.totalPaidAmount)}</span>
+      </td>
+      <td className="px-3 py-2 text-center">
+        <span className={`text-xs px-1.5 py-0.5 rounded font-semibold ${LEVEL_STYLES[claim.priorityLevel].cls}`}>
+          {LEVEL_STYLES[claim.priorityLevel].label}
+        </span>
       </td>
       <td className="px-3 py-2 text-center text-xs text-gray-500">{ageDays}d</td>
       <td className="px-3 py-2 text-center">

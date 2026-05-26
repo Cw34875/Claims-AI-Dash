@@ -2,6 +2,7 @@ import { useRef, useEffect, useState } from 'react';
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport } from 'ai';
 import type { AiProposal } from '../../types';
+import { mapToProposal, type ClaimReview } from '../../utils/proposals';
 import { MessageBubble } from './MessageBubble';
 import { SuggestedPrompts } from './SuggestedPrompts';
 
@@ -29,34 +30,53 @@ export function ChatInterface({ contextKey, selectedClaimId, suggestedPrompts, o
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Parse AI proposals from tool results
+  // Parse AI proposals from tool results.
+  // AI SDK v6: tool parts have type `tool-${toolName}` and properties (state, input, output)
+  // spread directly on the part — NOT nested under a `toolInvocation` property.
+  // Completed tool state is 'output-available', not 'result'.
   useEffect(() => {
     if (!onProposalGenerated || !selectedClaimId) return;
     const lastMsg = messages[messages.length - 1];
     if (!lastMsg || lastMsg.role !== 'assistant') return;
 
     for (const part of lastMsg.parts) {
-      if (part.type.startsWith('tool-') && 'toolInvocation' in part) {
-        const inv = (part as { toolInvocation: { toolName: string; state: string; output?: unknown } }).toolInvocation;
-        if (inv.toolName === 'analyzeClaim' && inv.state === 'result' && inv.output) {
-          const output = inv.output as { claim?: { claimId: string } };
-          if (output.claim) {
-            // Find the last assistant text to extract the proposal
-            const textParts = lastMsg.parts.filter((p) => p.type === 'text');
-            const text = textParts.map((p) => (p as { type: 'text'; text: string }).text).join('');
+      const p = part as { type: string; state?: string; output?: unknown; toolName?: string };
 
-            const proposal: AiProposal = {
-              claimId: output.claim.claimId,
-              recommendedAction: extractSection(text, 'recommended action') || 'Review and appeal',
-              confidence: extractConfidence(text),
-              reasoning: extractSection(text, 'reasoning') || text.slice(0, 300),
-              fieldEdits: [],
-              draftText: extractSection(text, 'draft') || '',
-              isWriteOff: text.toLowerCase().includes('write-off') || text.toLowerCase().includes('write off'),
-            };
+      // Resolve tool name: static tools encode it in the type ('tool-editClaim'),
+      // dynamic tools have an explicit toolName field.
+      let toolName: string | null = null;
+      if (p.type === 'dynamic-tool' && p.toolName) {
+        toolName = p.toolName;
+      } else if (p.type.startsWith('tool-')) {
+        toolName = p.type.slice('tool-'.length);
+      }
 
-            onProposalGenerated(output.claim.claimId, proposal);
-          }
+      if (!toolName || p.state !== 'output-available' || !p.output) continue;
+
+      if (toolName === 'editClaim') {
+        const output = p.output as ClaimReview & { error?: string };
+        if (!output.error && output.claimId) {
+          onProposalGenerated(output.claimId, mapToProposal(output));
+        }
+      }
+
+      if (toolName === 'analyzeClaim') {
+        const output = p.output as { claim?: { claimId: string } };
+        if (output.claim) {
+          const textParts = lastMsg.parts.filter((q) => q.type === 'text');
+          const text = textParts.map((q) => (q as { type: 'text'; text: string }).text).join('');
+
+          const proposal: AiProposal = {
+            claimId: output.claim.claimId,
+            recommendedAction: extractSection(text, 'recommended action') || 'Review and appeal',
+            confidence: extractConfidence(text),
+            reasoning: extractSection(text, 'reasoning') || text.slice(0, 300),
+            fieldEdits: [],
+            draftText: extractSection(text, 'draft') || '',
+            isWriteOff: text.toLowerCase().includes('write-off') || text.toLowerCase().includes('write off'),
+          };
+
+          onProposalGenerated(output.claim.claimId, proposal);
         }
       }
     }

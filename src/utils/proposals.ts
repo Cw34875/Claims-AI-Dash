@@ -1,7 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
 import type { AiProposal, FieldEdit } from '../types';
 
-interface LineItemCorrection {
+export interface LineItemCorrection {
   lineIndex: number;
   cptCode?: { current: string; proposed: string };
   modifier?: { current: string | null; proposed: string | null };
@@ -11,7 +10,8 @@ interface LineItemCorrection {
   confidence: 'high' | 'medium' | 'low';
 }
 
-interface ReviewResponse {
+export interface ClaimReview {
+  claimId: string;
   reasoning: string;
   recommendedAction: string;
   confidence: 'high' | 'medium' | 'low';
@@ -19,11 +19,11 @@ interface ReviewResponse {
   lineItemCorrections: LineItemCorrection[];
 }
 
-function mapToProposal(claimId: string, data: ReviewResponse): AiProposal {
-  const defaultStatus = data.shouldFillClaim ? 'accepted' : 'pending';
+export function mapToProposal(review: ClaimReview): AiProposal {
+  const defaultStatus = review.shouldFillClaim ? 'accepted' : 'pending';
   const fieldEdits: FieldEdit[] = [];
 
-  for (const c of data.lineItemCorrections) {
+  for (const c of review.lineItemCorrections) {
     const line = `Line ${c.lineIndex + 1}`;
 
     if (c.cptCode) {
@@ -73,59 +73,11 @@ function mapToProposal(claimId: string, data: ReviewResponse): AiProposal {
   }
 
   return {
-    claimId,
-    recommendedAction: data.recommendedAction,
-    confidence: data.confidence,
-    reasoning: data.reasoning,
+    claimId: review.claimId,
+    recommendedAction: review.recommendedAction,
+    confidence: review.confidence,
+    reasoning: review.reasoning,
     fieldEdits,
     draftText: '',
   };
-}
-
-export function useAutoProposal(
-  claimId: string | null,
-  existingProposal: AiProposal | undefined,
-  onProposalGenerated: (claimId: string, proposal: AiProposal) => void,
-) {
-  const [isLoading, setIsLoading] = useState(false);
-  const activeClaimId = useRef<string | null>(null);
-
-  useEffect(() => {
-    if (!claimId || existingProposal) {
-      setIsLoading(false);
-      return;
-    }
-
-    activeClaimId.current = claimId;
-    setIsLoading(true);
-
-    const controller = new AbortController();
-
-    (async () => {
-      try {
-        const res = await fetch('/api/review', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          signal: controller.signal,
-          body: JSON.stringify({ claimId }),
-        });
-
-        if (!res.ok) throw new Error(`Review failed: ${res.status}`);
-
-        const data: ReviewResponse = await res.json();
-
-        if (activeClaimId.current !== claimId) return;
-
-        onProposalGenerated(claimId, mapToProposal(claimId, data));
-      } catch (err) {
-        if ((err as Error).name !== 'AbortError') console.error('Auto-proposal error:', err);
-      } finally {
-        if (activeClaimId.current === claimId) setIsLoading(false);
-      }
-    })();
-
-    return () => { controller.abort(); };
-  }, [claimId, !!existingProposal]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  return { isLoading };
 }
