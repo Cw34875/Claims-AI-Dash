@@ -151,7 +151,7 @@ export function ClusterGroup({ cluster, sessionStates, selectedClaimId, onSelect
                     session={sessionStates[claim.claimId] ?? { claimId: claim.claimId }}
                     isSelected={claim.claimId === selectedClaimId}
                     onSelect={onSelect}
-                    rank={startRank + i}
+                    startRank={startRank + i}
                   />
                 ))}
               </tbody>

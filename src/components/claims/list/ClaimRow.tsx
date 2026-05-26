@@ -12,6 +12,7 @@ interface Props {
   session: ClaimSessionState;
   isSelected: boolean;
   onSelect: (id: string) => void;
+  startRank?: number;
 }
 
 function fmt$(n: number) {
