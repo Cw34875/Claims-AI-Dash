@@ -6,6 +6,7 @@ import { createAnthropic } from '@ai-sdk/anthropic';
 import { z } from 'zod';
 import type { EnrichedClaim } from '../src/types/index.js';
 import 'dotenv/config';
+import serverless from 'serverless-http';
 
 // Read API key directly from .env to avoid shell environment overrides
 const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -653,4 +654,4 @@ if (process.env.NODE_ENV === "development") {
   app.listen(PORT, () => console.log(`Running on ${PORT}`));
 }
 
-export default app;
+export default serverless(app);
